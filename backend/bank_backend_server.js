@@ -5,6 +5,21 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
 
+const app = express();
+
+// ---- FIX CORS HERE ----
+app.use(cors({
+  origin: "*",
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  allowedHeaders: "Content-Type,Authorization",
+}));
+app.options("*", cors());
+
+// JSON middleware
+app.use(express.json());
+
+// DB
+connectDB();
 // Routes
 import authRoutes from "./routes/authRoutes.js";
 import accountRoutes from "./routes/accountRoutes.js";
@@ -19,21 +34,6 @@ console.log("BREVO_API_KEY:", process.env.BREVO_API_KEY?.slice(0, 8));
 console.log("====================");
 
 
-const app = express();
-
-app.use(cors({
-    origin: "*",
-    methods: "GET,POST,PUT,DELETE,OPTIONS",
-    allowedHeaders: "Content-Type,Authorization",
-  }));
-  
-  app.options("*", cors()); 
-  
-  // Needed for JSON body parsing
-  app.use(express.json());
-
-// DB
-connectDB();
 
 // Routes
 app.use("/api/auth", authRoutes);
