@@ -1,0 +1,32 @@
+{
+    "name": "bank-backend",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "bank_backend_server.js",
+    "scripts": {
+        "start": "node bank_backend_server.js",
+        "dev": "nodemon bank_backend_server.js"
+    },
+    "dependencies": {
+        "@sendinblue/client": "^3.3.1",
+        "@simplewebauthn/browser": "^13.2.2",
+        "@simplewebauthn/server": "^13.2.2",
+        "@simplewebauthn/types": "^12.0.0",
+        "axios": "^1.13.2",
+        "base64url": "^3.0.1",
+        "bcryptjs": "^2.4.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.6.1",
+        "express": "^4.21.2",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^7.8.7",
+        "nodemailer": "^7.0.10"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.11"
+    },
+    "description": "",
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
