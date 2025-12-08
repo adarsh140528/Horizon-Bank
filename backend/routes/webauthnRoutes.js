@@ -25,7 +25,7 @@ router.post("/register", async (req, res) => {
     challenge,
     rp: {
       name: "Horizon Bank",
-      id: "localhost",
+      id: "https://horizon-bank-one.vercel.app",
     },
     user: {
       id: user._id.toString(),
@@ -91,7 +91,7 @@ router.post("/login/options", async (req, res) => {
 
   res.json({
     challenge,
-    rpId: "localhost",
+    rpId: "https://horizon-bank-one.vercel.app",
     allowCredentials: user.webauthnCredentials.map((cred) => ({
       id: cred.credentialID,
       type: "public-key",
