@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://horizon-bank.onrender.com",
+  baseURL: "https://horizon-bank.onrender.com/api",
 });
 
 // Attach token automatically
