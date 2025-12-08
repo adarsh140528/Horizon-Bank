@@ -25,7 +25,7 @@ const app = express();
 app.use(cors({
     origin: [
       "http://localhost:5173",
-      "horizon-bank-jtv5pcrnb-adarshhs-projects.vercel.app"
+      "horizon-bank-lyrshezxz-adarshhs-projects.vercel.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
