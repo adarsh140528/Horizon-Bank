@@ -6,6 +6,14 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
+// Choose RP ID based on environment
+// For now, hard-code production domain to keep it simple
+const rpName = "Horizon Bank";
+const rpID =
+  process.env.NODE_ENV === "production"
+    ? "horizon-bank-one.vercel.app" // ✅ NO https://
+    : "localhost";
+
 /* -------------------------------------------------------
    STEP 1: REGISTRATION OPTIONS (BEGIN PASSKEY SETUP)
 ------------------------------------------------------- */
@@ -24,17 +32,17 @@ router.post("/register", async (req, res) => {
   res.json({
     challenge,
     rp: {
-      name: "Horizon Bank",
-      id: "https://horizon-bank-one.vercel.app",
+      name: rpName,
+      id: rpID, // ✅ domain only
     },
     user: {
-      id: user._id.toString(),
+      id: user._id.toString(), // string ID is fine
       name: user.email,
       displayName: user.name,
     },
     pubKeyCredParams: [
-      { type: "public-key", alg: -7 },     // ES256
-      { type: "public-key", alg: -257 },   // RS256
+      { type: "public-key", alg: -7 }, // ES256
+      { type: "public-key", alg: -257 }, // RS256
     ],
     authenticatorSelection: {
       userVerification: "preferred",
@@ -57,7 +65,7 @@ router.post("/verify-register", async (req, res) => {
     return res.status(400).json({ message: "Invalid credential" });
   }
 
-  // Save credential for later login
+  // Demo: store minimal info; real apps should verify signatures etc.
   user.webauthnCredentials.push({
     credentialID: credential.id,
     publicKey:
@@ -91,7 +99,7 @@ router.post("/login/options", async (req, res) => {
 
   res.json({
     challenge,
-    rpId: "https://horizon-bank-one.vercel.app",
+    rpId: rpID, // ✅ domain only — must match above
     allowCredentials: user.webauthnCredentials.map((cred) => ({
       id: cred.credentialID,
       type: "public-key",
@@ -115,16 +123,14 @@ router.post("/login/verify", async (req, res) => {
     return res.status(400).json({ message: "Invalid login credential" });
   }
 
-  // SKIPPING REAL SIGNATURE CHECK FOR NOW — DEMO MODE
+  // Still demo: skipping real signature checks
 
-  // Create REAL JWT token
   const token = jwt.sign(
     { id: user._id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 
-  // Return full user so dashboard loads balance + account
   res.json({
     success: true,
     user: {
