@@ -16,8 +16,8 @@ export const sendEmailOTP = async (email, otp) => {
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.SMTP_USER, // your Gmail
         pass: process.env.SMTP_PASS, // Gmail App Password
