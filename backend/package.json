@@ -8,6 +8,7 @@
         "dev": "nodemon bank_backend_server.js"
     },
     "dependencies": {
+        "@sendgrid/mail": "^8.1.6",
         "@sendinblue/client": "^3.3.1",
         "@simplewebauthn/browser": "^13.2.2",
         "@simplewebauthn/server": "^13.2.2",
