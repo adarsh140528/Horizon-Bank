@@ -1,46 +1,38 @@
-// backend/utils/sendOtp.js
-import axios from "axios";
+import sgMail from "@sendgrid/mail";
 
-// Send OTP email using Resend
+// Initialize SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+// EMAIL OTP FUNCTION
 export const sendEmailOTP = async (to, otp) => {
   try {
-    const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.RESEND_FROM || "onboarding@resend.dev";
+    const from = process.env.SENDGRID_FROM;
 
-    if (!apiKey) {
-      console.error("❌ RESEND_API_KEY missing");
-      throw new Error("Resend API missing");
-    }
+    if (!from) throw new Error("SENDGRID_FROM is missing");
+    if (!process.env.SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY is missing");
 
-    await axios.post(
-      "https://api.resend.com/emails",
-      {
-        from,
-        to,
-        subject: "Your OTP Code",
-        html: `
-          <h2>Your OTP Code</h2>
-          <p>Your Horizon Bank OTP is:</p>
-          <h1 style="font-size: 32px; color: #2563eb;">${otp}</h1>
-          <p>This code will expire in 5 minutes.</p>
-        `,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const msg = {
+      to,
+      from,
+      subject: "Your Horizon Bank OTP Code",
+      html: `
+        <h2>Your OTP Code</h2>
+        <p>Your Horizon Bank OTP is:</p>
+        <h1 style="font-size: 32px; color: #2563eb;">${otp}</h1>
+        <p>This OTP expires in 5 minutes.</p>
+      `,
+    };
 
-    console.log("✅ Resend Email sent to:", to);
-  } catch (error) {
-    console.error("❌ Resend Email Error:", error.response?.data || error);
-    throw new Error("OTP email sending failed");
+    await sgMail.send(msg);
+
+    console.log("✅ SendGrid OTP sent to:", to);
+  } catch (err) {
+    console.error("❌ SendGrid OTP Error:", err.response?.body || err.message);
+    throw new Error("Failed to send OTP email");
   }
 };
 
-// Keep your SMS OTP handler as-is
+// MOCK SMS (optional)
 export const sendSmsOTP = async (phone, otp) => {
-  console.log(`(SMS MOCK) OTP ${otp} sent to phone ${phone}`);
+  console.log(`(SMS MOCK) OTP ${otp} would be sent to phone ${phone}`);
 };
