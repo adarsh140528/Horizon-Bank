@@ -36,3 +36,4 @@ export const sendEmailOTP = async (to, otp) => {
 export const sendSmsOTP = async (phone, otp) => {
   console.log(`(SMS MOCK) OTP ${otp} would be sent to phone ${phone}`);
 };
+//addd
