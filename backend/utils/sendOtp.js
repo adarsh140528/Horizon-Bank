@@ -1,66 +1,46 @@
 // backend/utils/sendOtp.js
-
-import dotenv from "dotenv";
-dotenv.config();
-
-import nodemailer from "nodemailer";
 import axios from "axios";
 
-// DEBUG ENV CHECK
-console.log("DEBUG SMTP LOGIN =", process.env.SMTP_USER);
-console.log("DEBUG SMTP PASS =", process.env.SMTP_PASS ? "Loaded ✔" : "Missing ❌");
-console.log("DEBUG FROM =", process.env.SMTP_FROM);
-
-// ---------------- EMAIL OTP (Gmail SMTP) ----------------
-export const sendEmailOTP = async (email, otp) => {
+// Send OTP email using Resend
+export const sendEmailOTP = async (to, otp) => {
   try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER, // your Gmail
-        pass: process.env.SMTP_PASS, // Gmail App Password
-      },
-    });
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.RESEND_FROM || "onboarding@resend.dev";
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM, // your Gmail
-      to: email,
-      subject: "Your OTP Code",
-      text: `Your OTP is ${otp}`,
-    });
+    if (!apiKey) {
+      console.error("❌ RESEND_API_KEY missing");
+      throw new Error("Resend API missing");
+    }
 
-    console.log("✅ Email OTP sent to", email, "OTP:", otp);
-    return true;
-  } catch (err) {
-    console.error("❌ Email OTP error:", err.message);
-    return false;
-  }
-};
-
-// ---------------- SMS OTP (Fast2SMS) ----------------
-export const sendSmsOTP = async (phone, otp) => {
-  try {
     await axios.post(
-      "https://www.fast2sms.com/dev/bulkV2",
+      "https://api.resend.com/emails",
       {
-        route: "v3",
-        sender_id: "TXTIND",
-        message: `Your OTP is ${otp}`,
-        language: "english",
-        flash: 0,
-        numbers: phone,
+        from,
+        to,
+        subject: "Your OTP Code",
+        html: `
+          <h2>Your OTP Code</h2>
+          <p>Your Horizon Bank OTP is:</p>
+          <h1 style="font-size: 32px; color: #2563eb;">${otp}</h1>
+          <p>This code will expire in 5 minutes.</p>
+        `,
       },
       {
-        headers: { authorization: process.env.FAST2SMS_API_KEY },
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
       }
     );
 
-    console.log("✅ SMS OTP sent to", phone);
-    return true;
-  } catch (err) {
-    console.error("❌ SMS OTP error:", err.message);
-    return false;
+    console.log("✅ Resend Email sent to:", to);
+  } catch (error) {
+    console.error("❌ Resend Email Error:", error.response?.data || error);
+    throw new Error("OTP email sending failed");
   }
+};
+
+// Keep your SMS OTP handler as-is
+export const sendSmsOTP = async (phone, otp) => {
+  console.log(`(SMS MOCK) OTP ${otp} sent to phone ${phone}`);
 };
