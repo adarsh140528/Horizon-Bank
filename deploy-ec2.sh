@@ -31,10 +31,28 @@ fi
 
 # 1. Gather configuration details interactively
 echo -e "\n${YELLOW}>>> [1/7] Gathering deployment details...${NC}"
-read -p "Enter your domain name (e.g. horizonbank.com or app.horizonbank.com): " DOMAIN_NAME
+read -p "Enter your domain name (or EC2 IP address if you do not have a domain): " DOMAIN_NAME
 if [ -z "$DOMAIN_NAME" ]; then
     echo -e "${RED}Error: Domain name is required.${NC}"
     exit 1
+fi
+
+# Detect if it's an IP address or ask if they want SSL
+USE_HTTPS="n"
+if [[ "$DOMAIN_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo -e "${YELLOW}Domain looks like an IP address. SSL/HTTPS via Certbot is not supported on bare IPs.${NC}"
+    USE_HTTPS="n"
+else
+    read -p "Do you want to configure HTTPS/SSL using Let's Encrypt Certbot? (y/n): " RUN_CERTBOT
+    if [[ "$RUN_CERTBOT" =~ ^[Yy]$ ]]; then
+        USE_HTTPS="y"
+    fi
+fi
+
+if [ "$USE_HTTPS" = "y" ]; then
+    PROTOCOL="https"
+else
+    PROTOCOL="http"
 fi
 
 read -p "Enter MongoDB Atlas Connection URI: " MONGO_URI
@@ -91,7 +109,7 @@ SMTP_PASS=${SMTP_PASS}
 SMTP_FROM=${SMTP_USER}
 FAST2SMS_API_KEY=${FAST2SMS_API_KEY}
 RP_ID=${DOMAIN_NAME}
-EXPECTED_ORIGIN=https://${DOMAIN_NAME}
+EXPECTED_ORIGIN=${PROTOCOL}://${DOMAIN_NAME}
 NODE_ENV=production
 EOT
 
@@ -122,7 +140,7 @@ cd frontend
 
 # Create frontend .env file with VITE_API_URL
 cat <<EOT > .env
-VITE_API_URL=https://${DOMAIN_NAME}/api
+VITE_API_URL=${PROTOCOL}://${DOMAIN_NAME}/api
 EOT
 
 echo -e "${GREEN}Created frontend .env file successfully.${NC}"
@@ -181,15 +199,14 @@ echo -e "${GREEN}Nginx configured and restarted successfully.${NC}"
 
 # 6. Set up SSL with Let's Encrypt Certbot
 echo -e "\n${YELLOW}>>> [6/7] Setting up SSL Certificate with Certbot...${NC}"
-read -p "Do you want to configure HTTPS/SSL using Let's Encrypt Certbot? (y/n): " RUN_CERTBOT
-if [[ "$RUN_CERTBOT" =~ ^[Yy]$ ]]; then
+if [ "$USE_HTTPS" = "y" ]; then
     # Open HTTP port and HTTPS port if UFW firewall is active
     ufw allow 'Nginx Full' || true
     
     certbot --nginx -d $DOMAIN_NAME --agree-tos --no-eff-email --register-unsafely-without-email
     echo -e "${GREEN}SSL Certificate configured successfully!${NC}"
 else
-    echo -e "${YELLOW}Skipped Certbot configuration. You will need to setup SSL/HTTPS manually for WebAuthn/passkeys to work.${NC}"
+    echo -e "${YELLOW}Skipped Certbot configuration (HTTP mode). You will need to setup SSL/HTTPS manually or use a custom domain for WebAuthn/passkeys to work.${NC}"
 fi
 
 # 7. Final Completion
