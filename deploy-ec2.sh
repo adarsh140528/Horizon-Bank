@@ -101,8 +101,7 @@ echo -e "${GREEN}Created backend .env file successfully.${NC}"
 npm install --production
 
 # Start/Restart Express app using PM2
-pm2 describe bank-backend > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+if pm2 describe bank-backend > /dev/null 2>&1; then
     echo -e "${YELLOW}Restarting existing PM2 backend process...${NC}"
     pm2 restart bank-backend
 else
