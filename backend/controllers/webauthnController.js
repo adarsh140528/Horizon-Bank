@@ -9,7 +9,8 @@ import {
 
 const router = express.Router();
 
-const rpID = "localhost";   // 👈 CHANGE IF YOU DEPLOY → yourdomain.com
+const rpID = process.env.RP_ID || "localhost";   // 👈 CHANGE IF YOU DEPLOY → yourdomain.com
+const expectedOrigin = process.env.EXPECTED_ORIGIN || "http://localhost:5173";
 
 // -------------- REGISTER: CREATE OPTIONS --------------
 router.post("/register/options", async (req, res) => {
@@ -48,7 +49,7 @@ router.post("/register/verify", async (req, res) => {
   const verification = await verifyRegistrationResponse({
     response: credential,
     expectedChallenge: user.webauthnChallenge,
-    expectedOrigin: "http://localhost:5173",
+    expectedOrigin,
     expectedRPID: rpID,
   });
 
@@ -105,7 +106,7 @@ router.post("/login/verify", async (req, res) => {
   const verification = await verifyAuthenticationResponse({
     response: credential,
     expectedChallenge: user.webauthnChallenge,
-    expectedOrigin: "http://localhost:5173",
+    expectedOrigin,
     expectedRPID: rpID,
     authenticator: {
       credentialID: Buffer.from(user.webauthnCredentials[0].credentialID, "base64url"),

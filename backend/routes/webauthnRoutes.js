@@ -9,10 +9,11 @@ const router = express.Router();
 // Choose RP ID based on environment
 // For now, hard-code production domain to keep it simple
 const rpName = "Horizon Bank";
-const rpID =
+const rpID = process.env.RP_ID || (
   process.env.NODE_ENV === "production"
     ? "horizon-bank-one.vercel.app" // ✅ NO https://
-    : "localhost";
+    : "localhost"
+);
 
 /* -------------------------------------------------------
    STEP 1: REGISTRATION OPTIONS (BEGIN PASSKEY SETUP)

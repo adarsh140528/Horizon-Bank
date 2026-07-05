@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://horizon-bank.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://horizon-bank.onrender.com/api",
 });
 //new
 API.interceptors.request.use((req) => {
